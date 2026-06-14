@@ -183,6 +183,39 @@ Guidelines:
   }
 });
 
+// Fetch and clean GitHub projects for rooneyroynew
+app.get("/api/github-projects", async (req, res) => {
+  try {
+    const response = await fetch("https://api.github.com/users/rooneyroynew/repos", {
+      headers: {
+        "User-Agent": "express-server-app",
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`GitHub API response error: ${response.status} ${response.statusText}`);
+    }
+
+    const repos = (await response.json()) as any[];
+    if (!Array.isArray(repos)) {
+      throw new Error("Invalid response format from GitHub API");
+    }
+
+    const cleanedRepos = repos.map((repo: any) => ({
+      name: repo.name || "",
+      description: repo.description || "",
+      language: repo.language || "",
+      url: repo.html_url || repo.url || "",
+      updated_at: repo.updated_at || "",
+    }));
+
+    res.json(cleanedRepos);
+  } catch (error: any) {
+    console.error("GitHub Projects Error:", error);
+    res.status(500).json({ error: error?.message || "An error occurred while fetching projects." });
+  }
+});
+
 // Handle Vite in dev or static serving in production
 async function setupVite() {
   if (process.env.NODE_ENV !== "production") {
