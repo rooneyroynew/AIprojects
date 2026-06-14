@@ -18,6 +18,7 @@ export default function App() {
   const [apiKeyOk, setApiKeyOk] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [toast, setToast] = useState<{ type: "success" | "error" | "info"; text: string } | null>(null);
+  const [chatId, setChatId] = useState<string>(() => Math.random().toString(36).substring(7));
 
   // Check backend service key diagnostics
   const checkServiceHealth = async () => {
@@ -76,6 +77,7 @@ export default function App() {
 
   const handleSetCVText = async (text: string, fileName: string) => {
     setIsExtracting(true);
+    setChatId(Math.random().toString(36).substring(7));
     showToast("info", `Parsing and structuring CV: "${fileName}" using Gemini API...`);
     try {
       const res = await fetch("/api/parse-cv", {
@@ -280,6 +282,7 @@ What would you like to discuss first?`,
         body: JSON.stringify({
           message: text,
           cvText: cv?.rawText,
+          chatId: chatId,
           history: updatedMessages.slice(-12), // Keep up to 12 messages of conversational context limit
         }),
       });
@@ -306,6 +309,7 @@ What would you like to discuss first?`,
 
   const handleClearSession = () => {
     setMessages([]);
+    setChatId(Math.random().toString(36).substring(7));
     showToast("info", "Chat logs reset!");
   };
 
