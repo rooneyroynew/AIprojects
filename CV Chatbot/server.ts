@@ -52,7 +52,7 @@ app.post("/api/parse-cv", async (req, res) => {
     const prompt = `Extract all details from the following resume text and format them strictly according to the requested JSON schema.\n\nResume Raw Text:\n${rawText}`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
+      model: "gemini-2.0-flash",
       contents: prompt,
       config: {
         systemInstruction: "You are an expert resume parser. Read raw copy-pasted or extracted resume text and structure it in a clean format.",
@@ -102,32 +102,39 @@ app.post("/api/parse-cv", async (req, res) => {
     });
 
     const textOutput = response.text || "{}";
-    res.json(JSON.parse(textOutput));
+    try {
+      res.json(JSON.parse(textOutput));
+    } catch (parseError: any) {
+      console.error("JSON parse failure on Gemini output. Raw text:", textOutput, parseError);
+      res.status(500).json({ error: "Successfully retrieved raw CV details, but the structured JSON output is malformed. Please try submitting again." });
+    }
   } catch (error: any) {
     console.error("Parse CV Error:", error);
     res.status(500).json({ error: error?.message || "An error occurred during CV parsing." });
   }
 });
 
+// In-memory chat sessions cache
+const chatSessions = new Map<string, any>();
+
 // Chat endpoint to converse about the CV
 app.post("/api/chat", async (req, res) => {
   try {
-    const { message, cvText, history } = req.body;
+    const { message, cvText, chatId, history } = req.body;
     if (!message || typeof message !== "string") {
       res.status(400).json({ error: "message parameter is required." });
       return;
     }
+    if (!chatId || typeof chatId !== "string") {
+      res.status(400).json({ error: "chatId parameter is required." });
+      return;
+    }
 
     const ai = getGemini();
+    let chat = chatSessions.get(chatId);
 
-    const formattedHistory = Array.isArray(history)
-      ? history.map((h: any) => ({
-          role: h.role === "user" ? "user" : "model",
-          parts: [{ text: h.content }],
-        }))
-      : [];
-
-    const systemInstruction = `You are "Randhir's CV AI Assistant", an advanced, friendly, and professional conversational AI.
+    if (!chat) {
+      const systemInstruction = `You are "Randhir's CV AI Assistant", an advanced, friendly, and professional conversational AI.
 You have full access to Randhir's CV / Resume.
 Your goal is to answer any questions about Randhir Jha, his credentials, work experience, projects, skills, education, and suitability for various roles.
 
@@ -143,13 +150,30 @@ Guidelines:
 4. Keep the formatting neat and readable with markdown bullets where appropriate.
 5. You can also analyze the candidate's fitness for a specific job description if the user provides one!`;
 
-    const chat = ai.chats.create({
-      model: "gemini-3.5-flash",
-      config: {
-        systemInstruction,
-      },
-      history: formattedHistory,
-    });
+      const formattedHistory = Array.isArray(history)
+        ? history.map((h: any) => ({
+            role: h.role === "user" ? "user" : "model",
+            parts: [{ text: h.content }],
+          }))
+        : [];
+
+      chat = ai.chats.create({
+        model: "gemini-2.0-flash",
+        config: {
+          systemInstruction,
+        },
+        history: formattedHistory,
+      });
+
+      // Maintain chatSessions cache bounds
+      if (chatSessions.size >= 500) {
+        const oldestKey = chatSessions.keys().next().value;
+        if (oldestKey) {
+          chatSessions.delete(oldestKey);
+        }
+      }
+      chatSessions.set(chatId, chat);
+    }
 
     const response = await chat.sendMessage({ message });
     res.json({ reply: response.text });
