@@ -1,0 +1,93 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300..900;1,300..900&family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Georgia", "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom Editorial Colors */
+  --color-editorial-bg: #fdfcf8;
+  --color-editorial-ink: #1c1c1c;
+  --color-editorial-border: #d4d4d2;
+  --color-editorial-accent: #4a5568;
+  --color-editorial-card: #f9f8f4;
+}
+
+body {
+  background-color: var(--color-editorial-bg);
+  color: var(--color-editorial-ink);
+  font-family: var(--font-sans);
+}
+
+/* Elegant fade-in and slide-in animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-slide-in {
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Metadata tag styling */
+.editorial-section-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+/* Markdown styling inside bubbles */
+.markdown-body {
+  font-family: var(--font-serif);
+}
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-editorial-ink);
+}
+
+.markdown-body h1 { font-size: 1.35rem; font-style: italic; }
+.markdown-body h2 { font-size: 1.2rem; font-style: italic; }
+.markdown-body h3 { font-size: 1.1rem; }
+
+.markdown-body p {
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+.markdown-body ul, .markdown-body ol {
+  margin-left: 1.25rem;
+  margin-bottom: 0.75rem;
+  list-style-type: square;
+}
+
+.markdown-body ol {
+  list-style-type: decimal;
+}
+
+.markdown-body li {
+  margin-bottom: 0.35rem;
+}
+
+.markdown-body strong {
+  font-weight: 700;
+  color: var(--color-editorial-ink);
+}
+

@@ -1,0 +1,6 @@
+{
+  "name": "CV Chatbot",
+  "description": "An elegant assistant that extracts and formats your CV from Google Drive / Docs, and answers detailed questions in a full-stack real-time chatbot.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
